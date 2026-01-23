@@ -1,5 +1,5 @@
 class TasksController < ApplicationController
-  before_action :select_task, only: [:update, :destroy, :update_status]
+  before_action :select_task, only: [:update, :destroy, :update_status, :duplicate]
   skip_before_action :verify_authenticity_token
 
   def index
@@ -26,6 +26,11 @@ class TasksController < ApplicationController
     tasks_all
   end
 
+  def duplicate
+    Tasks::DuplicateService.new(@task).call
+    tasks_all
+  end
+
   private
 
   def task_params
@@ -37,7 +42,7 @@ class TasksController < ApplicationController
   end
 
   def tasks_all
-    @tasks = Task.all
+    @tasks = Task.includes(:genre)
     render :all_tasks
   end
 end

@@ -72,4 +72,93 @@ RSpec.describe 'Tasks API', type: :request do
       end
     end
   end
+
+  # ============================================================
+  # POST /tasks/:id/duplicate - タスク複製API
+  # ============================================================
+  describe 'POST /tasks/:id/duplicate' do
+    let!(:original_task) do
+      Task.create!(
+        name: '元のタスク',
+        explanation: 'タスクの説明文',
+        genre: genre,
+        priority: :high,
+        status: 2,
+        deadline_date: Date.new(2026, 6, 15)
+      )
+    end
+
+    # ----------------------------------------------------------
+    # 正常系 - 基本動作
+    # ----------------------------------------------------------
+    describe '正常系' do
+      it 'A-1: 複製リクエストが成功し、HTTPステータス200または201が返ること' do
+        post "/tasks/#{original_task.id}/duplicate"
+
+        expect(response).to have_http_status(:success)
+      end
+
+      it 'A-2: レスポンスに複製されたタスクの情報が含まれること' do
+        post "/tasks/#{original_task.id}/duplicate"
+
+        json_response = JSON.parse(response.body)
+
+        # レスポンス形式に応じて検証（配列形式の場合は複製タスクを検索）
+        if json_response.is_a?(Array)
+          duplicated_task_json = json_response.find { |t| t['name'] == '元のタスク(コピー)' }
+          expect(duplicated_task_json).to be_present
+        else
+          expect(json_response['name']).to eq '元のタスク(コピー)'
+        end
+      end
+
+      it 'A-3: DBのタスク件数が1件増加すること' do
+        expect {
+          post "/tasks/#{original_task.id}/duplicate"
+        }.to change(Task, :count).by(1)
+      end
+
+      it '複製されたタスクがDBに正しく保存されていること' do
+        post "/tasks/#{original_task.id}/duplicate"
+
+        duplicated_task = Task.find_by(name: '元のタスク(コピー)')
+
+        expect(duplicated_task).to be_present
+        expect(duplicated_task.id).not_to eq original_task.id
+      end
+    end
+
+    # ----------------------------------------------------------
+    # 異常系 - リクエストエラー
+    # ----------------------------------------------------------
+    describe '異常系' do
+      it 'A-10: 存在しないタスクIDを指定した場合、404エラーが返ること' do
+        non_existent_id = 999999
+
+        post "/tasks/#{non_existent_id}/duplicate"
+
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it 'A-11: 不正なID形式（文字列）を指定した場合、404エラーが返ること' do
+        post '/tasks/invalid_id/duplicate'
+
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it 'A-12: IDにマイナス値を指定した場合、404エラーが返ること' do
+        post '/tasks/-1/duplicate'
+
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it '存在しないタスクIDを指定した場合、DBのタスク件数が変わらないこと' do
+        non_existent_id = 999999
+
+        expect {
+          post "/tasks/#{non_existent_id}/duplicate"
+        }.not_to change(Task, :count)
+      end
+    end
+  end
 end
