@@ -150,6 +150,8 @@ GEM
     net-smtp (0.5.1)
       net-protocol
     nio4r (2.7.5)
+    nokogiri (1.18.10-x64-mingw-ucrt)
+      racc (~> 1.4)
     nokogiri (1.18.10-x86_64-darwin)
       racc (~> 1.4)
     nokogiri (1.18.10-x86_64-linux-gnu)
@@ -233,6 +235,8 @@ GEM
       railties (>= 6.0.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
+    tzinfo-data (1.2025.3)
+      tzinfo (>= 1.0.0)
     web-console (4.2.0)
       actionview (>= 6.0.0)
       activemodel (>= 6.0.0)
@@ -252,6 +256,7 @@ GEM
     zeitwerk (2.7.3)
 
 PLATFORMS
+  x64-mingw-ucrt
   x86_64-darwin-21
   x86_64-darwin-23
   x86_64-linux

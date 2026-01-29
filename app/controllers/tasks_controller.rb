@@ -26,6 +26,15 @@ class TasksController < ApplicationController
     tasks_all
   end
 
+  def report
+    stats = Task.statistics
+    @total_count = stats[:total_count]
+    @count_by_status = stats[:count_by_status]
+    @completion_rate = stats[:completion_rate]
+
+    render :report
+  end
+
   private
 
   def task_params
